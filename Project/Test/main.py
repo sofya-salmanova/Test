@@ -1,14 +1,14 @@
-import http.server
+from http import server, HTTPStatus
 
 
-def run(server_class=http.server.HTTPServer,
-        handler_class=http.server.BaseHTTPRequestHandler):
+def run(server_class=server.HTTPServer,
+        handler_class=server.BaseHTTPRequestHandler):
     server_address = ('', 8000)
     httpd = server_class(server_address, handler_class)
     httpd.serve_forever()
 
 
-class HttpProcessor(http.server.BaseHTTPRequestHandler):
+class HttpProcessor(server.BaseHTTPRequestHandler):
     MIME_TYPE_PLAIN = 'plain/text'
     MIME_TYPE_HTML = 'text/html'
 
@@ -30,17 +30,17 @@ class HttpProcessor(http.server.BaseHTTPRequestHandler):
 
     def do_GET(self):
         body = b"<html><body><h1>I'm GET</h1></body></html>"
-        self.response_common_part(http.HTTPStatus.OK, body, self.MIME_TYPE_HTML)
+        self.response_common_part(HTTPStatus.OK, body, self.MIME_TYPE_HTML)
 
 
     def do_POST(self):
         body = b"<html><body><h1>I'm POST</h1></body></html>"
-        self.response_common_part(http.HTTPStatus.CREATED, body, self.MIME_TYPE_HTML)
+        self.response_common_part(HTTPStatus.CREATED, body, self.MIME_TYPE_HTML)
 
 
     def do_HEAD(self):
         body = b"<html><body><h1>I'm GET</h1></body></html>"
-        self.response_common_part(http.HTTPStatus.NO_CONTENT, body, self.MIME_TYPE_HTML)
+        self.response_common_part(HTTPStatus.NO_CONTENT, body, self.MIME_TYPE_HTML)
 
 
 if __name__ == "__main__":
