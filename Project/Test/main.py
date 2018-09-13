@@ -9,28 +9,38 @@ def run(server_class=http.server.HTTPServer,
 
 
 class HttpProcessor(http.server.BaseHTTPRequestHandler):
-    def response_common_part(self, code, message, body):
-        self.protocol_version = "HTTP/1.1"
-        self.send_response(code, message)
-        self.send_header('Content-Type', 'text/html')
-        self.send_header('Content-Length', str(len(body)))
+    MIME_TYPE_PLAIN = 'plain/text'
+    MIME_TYPE_HTML = 'text/html'
+
+    def response_common_part(self, status, body=None, content_type=None, proto_ver="1.1"):
+        content_type = content_type or self.MIME_TYPE_PLAIN
+
+        self.protocol_version = f"HTTP/{proto_ver}"
+        self.send_response(status)
+
+        if body is not None:
+            self.send_header('Content-Type', content_type)
+            self.send_header('Content-Length', str(len(body)))
+
         self.end_headers()
+
+        if body is not None and self.command != 'HEAD':
+            self.wfile.write(body)
+
 
     def do_GET(self):
         body = b"<html><body><h1>I'm GET</h1></body></html>"
-        self.response_common_part(200, 'OK', body)
-        self.wfile.write(body)
+        self.response_common_part(http.HTTPStatus.OK, body, self.MIME_TYPE_HTML)
 
 
     def do_POST(self):
         body = b"<html><body><h1>I'm POST</h1></body></html>"
-        self.response_common_part(201, 'Created', body)
-        self.wfile.write(body)
+        self.response_common_part(http.HTTPStatus.CREATED, body, self.MIME_TYPE_HTML)
 
 
     def do_HEAD(self):
         body = b"<html><body><h1>I'm GET</h1></body></html>"
-        self.response_common_part(204, 'No Content', body)
+        self.response_common_part(http.HTTPStatus.NO_CONTENT, body, self.MIME_TYPE_HTML)
 
 
 if __name__ == "__main__":

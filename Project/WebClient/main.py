@@ -14,14 +14,17 @@ url = args.protocol + args.address + ':' + args.port
 method = args.method.lower()
 
 
-fmethod = functions.get(method)
-if fmethod != None:
-    r = fmethod(url)
-    print(r.content)
-    print(r.headers)
+try:
+    fmethod = functions[method]
+except KeyError:
+    print('input method %s is not supported' % method)
+    raise SystemExit()
 
-else:
-    print('input method is not supported')
+r = fmethod(url)
+print(r.status_code)
+print(r.content)
+print(r.headers)
+
 
 
 
