@@ -1,13 +1,23 @@
 import sys
 import os
+from urllib.parse import unquote_plus
+
 from http import server, HTTPStatus
 import click
 import magic
+
 
 @click.command()
 @click.option('--root-dir', default=os.getcwd() + '/Files')
 @click.option('--port', default=8000)
 def run(root_dir, port):
+    """
+    Web-server
+
+    --root-dir (default CWD/Files) \n
+    --port (default 8000)
+
+    """
     global root_directory
     root_directory = root_dir
 
@@ -15,10 +25,10 @@ def run(root_dir, port):
     httpd = server.HTTPServer(server_address, HttpProcessor)
     httpd.serve_forever()
 
+
 class HttpProcessor(server.BaseHTTPRequestHandler):
     MIME_TYPE_PLAIN = 'plain/text'
     MIME_TYPE_HTML = 'text/html'
-
 
     def response_common_part(self, status, body=None, content_type=None, proto_ver="1.1"):
         content_type = content_type or self.MIME_TYPE_PLAIN
@@ -36,16 +46,17 @@ class HttpProcessor(server.BaseHTTPRequestHandler):
         if body is not None and self.command != 'HEAD':
             self.wfile.write(body)
 
-
     def do_GET(self):
 
         status = HTTPStatus.OK
 
         if self.path == '/list':
+            # Если пришел запрос на список файлов, формируем его и отправляем клиенту
             body = ';'.join(os.listdir(root_directory)).encode()
         elif self.path[:6] == '/file/':
+            # Если пришел запрос на файл, пытаемся отправить его
             try:
-                handle = open(root_directory + self.path[5:], 'rb')
+                handle = open(root_directory + unquote_plus(self.path[5:]), 'rb')
                 body = handle.read()
                 handle.close()
             except:
@@ -57,11 +68,9 @@ class HttpProcessor(server.BaseHTTPRequestHandler):
 
         self.response_common_part(status, body, magic.from_buffer(body, mime = True))
 
-
     def do_POST(self):
         body = b"<html><body><h1>I'm POST</h1></body></html>"
         self.response_common_part(HTTPStatus.CREATED, body, self.MIME_TYPE_HTML)
-
 
     def do_HEAD(self):
         body = b"<html><body><h1>I'm GET</h1></body></html>"
