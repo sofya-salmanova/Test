@@ -1,5 +1,6 @@
 from sys import exc_info
 import os
+import logging
 from urllib.parse import quote_plus, unquote_plus
 
 import requests
@@ -43,43 +44,25 @@ def main_loop(protocol, address, port, root_dir):
             connect('get', protocol, address, port, root_dir, path = '/list')
 
 
-def connect(method, protocol, address, port, root_dir, path=''):
-
-    url = protocol + address + ':' + port + path
-    method = method.lower()
-
-    try:
-        r = getattr(requests, method)(url)
-    except AttributeError:
-        print('input method %s is not supported' % method)
-        raise SystemExit()
-    except requests.exceptions.ConnectionError:
-        print("can't connect")
-        raise SystemExit()
-    except:
-        print(exc_info()[0])
-        raise SystemExit()
-
+def process_request(r, method, protocol, address, port, root_dir, path):
     if path == '/list':
 
-        list = r.text.split(';')
+        file_list = r.text.split(';')
 
-        count = 1
-        for file in list:
+        for count, file in enumerate(file_list, 1):
             print(f'[{count}] {file}')
-            count += 1
         print('[0] exit')
 
         while True:
             try:
                 index = int(input())
-                if 0 <= index <= len(list):
+                if 0 <= index <= len(file_list):
                     break
             except:
                 continue
 
         if index != 0:
-            connect(method, protocol, address, port, root_dir, '/file/' + quote_plus(list[index - 1]))
+            connect(method, protocol, address, port, root_dir, '/file/' + quote_plus(file_list[index - 1]))
 
     elif path[:6] == '/file/' and r.status_code != '404':
 
@@ -125,6 +108,27 @@ def connect(method, protocol, address, port, root_dir, path=''):
         print(r.status_code)
         print(r.headers)
         print(r.content)
+
+
+def connect(method, protocol, address, port, root_dir, path=''):
+
+    url = protocol + address + ':' + port + path
+    method = method.lower()
+
+    try:
+        r = getattr(requests, method)(url)
+    except AttributeError:
+        logging.warning('input method %s is not supported' % method)
+        raise SystemExit()
+    except requests.exceptions.ConnectionError:
+        logging.warning("can't connect")
+        raise SystemExit()
+    except:
+        logging.warning(exc_info()[0])
+        raise SystemExit()
+
+    process_request(r, method, protocol, address, port, root_dir, path)
+
 
 if __name__ == '__main__':
     main_loop()
