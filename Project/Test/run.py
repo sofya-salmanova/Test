@@ -17,7 +17,7 @@ def run(root_dir, port):
     --port (default 8000)
 
     """
-    my_server.root_directory = root_dir
+    my_server.HttpProcessor.root_directory = root_dir
 
     server_address = ('', port)
     httpd = server.HTTPServer(server_address, my_server.HttpProcessor)
