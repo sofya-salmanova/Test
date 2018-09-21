@@ -45,7 +45,7 @@ def main_loop(protocol, address, port, root_dir):
 
 
 def process_request(r, method, protocol, address, port, root_dir, path):
-    if path == '/list':
+    if path == '/list' and r.status_code != 500:
 
         file_list = r.text.split(';')
 
@@ -64,7 +64,7 @@ def process_request(r, method, protocol, address, port, root_dir, path):
         if index != 0:
             connect(method, protocol, address, port, root_dir, '/file/' + quote_plus(file_list[index - 1]))
 
-    elif path[:6] == '/file/' and r.status_code != '404':
+    elif path[:6] == '/file/' and r.status_code != 404:
 
         while True:
 

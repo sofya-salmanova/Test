@@ -3,18 +3,21 @@ import os
 import logging
 from urllib.parse import unquote_plus
 
-from http import server, HTTPStatus
+from http import server as HTTPServer, HTTPStatus
 import magic
 
-class HttpProcessor(server.BaseHTTPRequestHandler):
+class HttpProcessor(HTTPServer.BaseHTTPRequestHandler):
     MIME_TYPE_PLAIN = 'plain/text'
     MIME_TYPE_HTML = 'text/html'
 
-    root_directory = ''
+
+    def __init__(self, request, client_address, server):
+        self.root_directory = server.root_directory
+        HTTPServer.BaseHTTPRequestHandler.__init__(self, request, client_address, server)
+
 
     def form_body(self):
         status = HTTPStatus.OK
-        self.root_directory = HttpProcessor.root_directory
 
         if self.path == '/list':
             # Если пришел запрос на список файлов, формируем его и отправляем клиенту
@@ -22,7 +25,7 @@ class HttpProcessor(server.BaseHTTPRequestHandler):
                 body = ';'.join(os.listdir(self.root_directory)).encode()
             except:
                 status = HTTPStatus.INTERNAL_SERVER_ERROR
-                body = sys.exc_info()[0].encode()
+                body = str(sys.exc_info()[0]).encode()
 
         elif self.path[:6] == '/file/':
             # Если пришел запрос на файл, пытаемся отправить его
