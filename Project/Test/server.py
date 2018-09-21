@@ -3,17 +3,19 @@ import os
 import logging
 from urllib.parse import unquote_plus
 
-from http import server as HTTPServer, HTTPStatus
+from http import server as HTTPServerModule, HTTPStatus
 import magic
 
-class HttpProcessor(HTTPServer.BaseHTTPRequestHandler):
+
+class MyHTTPServer(HTTPServerModule.HTTPServer):
+    def __init__(self, server_address, RequestHandlerClass, root_directory):
+        HTTPServerModule.HTTPServer.__init__(self, server_address, RequestHandlerClass)
+        self.root_directory = root_directory
+
+
+class HttpProcessor(HTTPServerModule.BaseHTTPRequestHandler):
     MIME_TYPE_PLAIN = 'plain/text'
     MIME_TYPE_HTML = 'text/html'
-
-
-    def __init__(self, request, client_address, server):
-        self.root_directory = server.root_directory
-        HTTPServer.BaseHTTPRequestHandler.__init__(self, request, client_address, server)
 
 
     def form_body(self):
@@ -22,7 +24,7 @@ class HttpProcessor(HTTPServer.BaseHTTPRequestHandler):
         if self.path == '/list':
             # Если пришел запрос на список файлов, формируем его и отправляем клиенту
             try:
-                body = ';'.join(os.listdir(self.root_directory)).encode()
+                body = ';'.join(os.listdir(self.server.root_directory)).encode()
             except:
                 status = HTTPStatus.INTERNAL_SERVER_ERROR
                 body = str(sys.exc_info()[0]).encode()
@@ -30,7 +32,7 @@ class HttpProcessor(HTTPServer.BaseHTTPRequestHandler):
         elif self.path[:6] == '/file/':
             # Если пришел запрос на файл, пытаемся отправить его
             try:
-                handle = open(self.root_directory + unquote_plus(self.path[5:]), 'rb')
+                handle = open(self.server.root_directory + unquote_plus(self.path[5:]), 'rb')
                 body = handle.read()
                 handle.close()
             except:

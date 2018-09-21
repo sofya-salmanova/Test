@@ -19,8 +19,7 @@ def run(root_dir, port):
     """
 
     server_address = ('', port)
-    httpd = server.HTTPServer(server_address, my_server.HttpProcessor)
-    httpd.root_directory = root_dir
+    httpd = my_server.MyHTTPServer(server_address, my_server.HttpProcessor, root_dir)
 
     httpd.serve_forever()
 
