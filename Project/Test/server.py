@@ -19,7 +19,7 @@ class HttpProcessor(server.BaseHTTPRequestHandler):
         if self.path == '/list':
             # Если пришел запрос на список файлов, формируем его и отправляем клиенту
             try:
-                body = ';'.join(os.listdir(self.root_directory)).encode()
+                body = ';'.join(os.listdir(HttpProcessor.root_directory)).encode()
             except:
                 status = HTTPStatus.INTERNAL_SERVER_ERROR
                 body = sys.exc_info()[0].encode()
@@ -27,7 +27,7 @@ class HttpProcessor(server.BaseHTTPRequestHandler):
         elif self.path[:6] == '/file/':
             # Если пришел запрос на файл, пытаемся отправить его
             try:
-                handle = open(self.root_directory + unquote_plus(self.path[5:]), 'rb')
+                handle = open(HttpProcessor.root_directory + unquote_plus(self.path[5:]), 'rb')
                 body = handle.read()
                 handle.close()
             except:
