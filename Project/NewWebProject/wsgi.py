@@ -8,11 +8,13 @@ from urllib.parse import quote_plus, unquote_plus
 from envparse import env
 
 
+SERVER_ROOT_DIR = env.str('SERVER_ROOT_DIR', default=os.getcwd() + '/Files/')
+
+
 def application(environ, start_response):
     status = HTTPStatus.OK
     path = environ['REQUEST_URI']
 
-    root_dir = env.str('rootdir', default=os.getcwd() + '/Files/')
 
     if path == '/':
         try:
