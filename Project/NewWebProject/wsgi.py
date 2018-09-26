@@ -5,19 +5,25 @@ import logging
 from http import HTTPStatus
 import magic
 from urllib.parse import quote_plus, unquote_plus
+import uwsgi
 
-
+#uwsgi --http :9090 -sgi-file wsgi.py --set rootdir="/home/sofya/Pictures/"
 def application(env, start_response):
-
     status = HTTPStatus.OK
     path = env['REQUEST_URI']
 
+    try:
+        root_dir = uwsgi.opt['rootdir']
+    except:
+        root_dir = os.getcwd() + '/Files/'
+        logging.warning('rootdir not specified, using default')
+
+
     if path == '/':
         try:
-            directory = os.getcwd() + '/Files/'
             linklist = []
-            for file in os.listdir(directory):
-                linklist.append(f'<a href="{quote_plus(directory + file)}" download="">{file}</a>')
+            for file in os.listdir(root_dir):
+                linklist.append(f'<a href="{quote_plus(root_dir + file)}" download="">{file}</a>')
 
             body = '<br/>'.join(linklist).encode()
         except:
