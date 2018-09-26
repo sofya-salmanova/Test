@@ -5,16 +5,15 @@ import logging
 from http import HTTPStatus
 import magic
 from urllib.parse import quote_plus, unquote_plus
-import uwsgi
 
-#uwsgi --http :9090 -sgi-file wsgi.py --set rootdir="/home/sofya/Pictures/"
+
 def application(env, start_response):
     status = HTTPStatus.OK
     path = env['REQUEST_URI']
 
     try:
-        root_dir = uwsgi.opt['rootdir']
-    except:
+        root_dir = os.environ['rootdir']
+    except KeyError:
         root_dir = os.getcwd() + '/Files/'
         logging.warning('rootdir not specified, using default')
 
