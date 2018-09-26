@@ -5,18 +5,14 @@ import logging
 from http import HTTPStatus
 import magic
 from urllib.parse import quote_plus, unquote_plus
+from envparse import env
 
 
-def application(env, start_response):
+def application(environ, start_response):
     status = HTTPStatus.OK
-    path = env['REQUEST_URI']
+    path = environ['REQUEST_URI']
 
-    try:
-        root_dir = os.environ['rootdir']
-    except KeyError:
-        root_dir = os.getcwd() + '/Files/'
-        logging.warning('rootdir not specified, using default')
-
+    root_dir = env.str('rootdir', default=os.getcwd() + '/Files/')
 
     if path == '/':
         try:
